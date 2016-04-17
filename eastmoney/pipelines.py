@@ -145,7 +145,7 @@ class XinwenPipeline(object):
         )
         db = connection[self.MONGODB_DB]
         self.collection = db[self.MONGODB_COLLECTION]
- 
+
     def process_item(self, item, spider):
         if spider.name != 'xinwen':
             return item

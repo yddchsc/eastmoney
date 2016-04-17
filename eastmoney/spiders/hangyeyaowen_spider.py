@@ -5,38 +5,37 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spider import BaseSpider
-import ghost
-from PySide import QtWebKit
+from scrapy.spiders import BaseSpider
+import json
 
-# import sys
-
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
-class HangyeyaowenSpider(BaseSpider):
+class HangyeyaowenSpider(Spider):
     name = "hangyeyaowen"
     allowed_domains = ["eastmoney.com"]
     start_urls = [
-        "http://data.eastmoney.com/stock/stockstatistic.html"
-    ]
+        "http://datainterface3.eastmoney.com/EM_DataCenter_V3/api/LHBXQSUM/GetLHBXQSUM?tkn=eastmoney&mkt=0&dateNum=&startDateTime=2016-01-15&endDateTime=2016-04-15&sortRule=1&sortColumn=&pageNum=1&pageSize=50&cfg=lhbxqsum"
+    ]    
     def parse(self, response):
-        # get stock link
-        i = 1
-        while Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]:
-            url = Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]
-            i = i + 1
-            yield Request(url, callback=self.parse_stock)
+        r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
+        p = 0
+        while p < 3:
+            url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
+            item = EastmoneyItem()
+            item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
+            item['name'] = r['Data'][0]['Data'][p].split('|')[1]       
+            yield Request(url, meta={'item':item}, callback=self.parse_stock)
+            p = p + 1
     def parse_stock(self,response):
-        hxs=Selector(text=response.body)
-        codes = hxs.xpath('//div[@class="qphox header-title mb7"]')
-        item = EastmoneyItem()
-        for code in codes:
-            item['_id'] = code.xpath(
-                '//*[@id="code"]/text()').extract()[0]
-            item['name'] = code.xpath(
-                '//h2/text()').extract()[0]
-        url = Selector(response).xpath('//*[@id="tab3"]/li[2]/h3/a/@href').extract()[0]
-        yield Request(url, meta={'item':item}, callback=self.parse_hangyeyaowen)
+        item = response.meta['item']
+        url = "http://quote.eastmoney.com"+Selector(response).xpath('//body/@onload').extract()[0][17:-1]
+        return Request(url, meta={'item':item}, callback=self.parse_second)
+    def parse_second(self,response):
+        item = response.meta['item']
+        url = Selector(response).xpath('//a[@id="cgyyt2"]/@href').extract()[0]
+        if url == "http://stock.eastmoney.com/hangye.html":
+            item['hangyeyaowen'] = {"null":0}
+            return item
+        else:
+            return Request(url, meta={'item':item}, callback=self.parse_hangyeyaowen)
     def parse_hangyeyaowen(self,response):
         item = response.meta['item']
         i = 1

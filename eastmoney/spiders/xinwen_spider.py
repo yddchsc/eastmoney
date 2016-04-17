@@ -5,48 +5,38 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spider import BaseSpider
-import ghost
-from PySide import QtWebKit
-import time
+from scrapy.spiders import BaseSpider
+import json
 
-# import sys
-
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
-
-class XinwenSpider(BaseSpider):
+class XinwenSpider(Spider):
     name = "xinwen"
     allowed_domains = ["eastmoney.com"]
     start_urls = [
-        "http://data.eastmoney.com/stock/stockstatistic.html"
-    ]  
+        "http://datainterface3.eastmoney.com/EM_DataCenter_V3/api/LHBXQSUM/GetLHBXQSUM?tkn=eastmoney&mkt=0&dateNum=&startDateTime=2016-01-15&endDateTime=2016-04-15&sortRule=1&sortColumn=&pageNum=1&pageSize=50&cfg=lhbxqsum"
+    ]    
     def parse(self, response):
-        # get stock link
-        i = 1
-        while Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]:
-            url = Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]
-            i = i + 1
-            yield Request(url, callback=self.parse_stock)
-            break
+        r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
+        p = 0
+        while p < 3:
+            url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
+            item = EastmoneyItem()
+            item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
+            item['name'] = r['Data'][0]['Data'][p].split('|')[1]    
+            yield Request(url, meta={'item':item}, callback=self.parse_stock)
+            p = p + 1
     def parse_stock(self,response):
-        hxs=Selector(text=response.body)
-        codes = hxs.xpath('//div[@class="qphox header-title mb7"]')
-        item = EastmoneyItem()
-        for code in codes:
-            item['_id'] = code.xpath(
-                '//*[@id="code"]/text()').extract()[0]
-            item['name'] = code.xpath(
-                '//h2/text()').extract()[0]
-        url = 'http://guba.eastmoney.com/list,' + item['_id'] + ',1,f.html'
-        yield Request(url, meta={'item':item}, callback=self.parse_xinwen)
+        item = response.meta['item']
+        url = 'http://guba.eastmoney.com/list,' + item['_id'] + ',1,f_1.html'
+        item['number'] = {}
+        return Request(url, meta={'item':item}, callback=self.parse_xinwen)
     def parse_xinwen(self,response):
         item = response.meta['item']
         i = 2
         while Selector(response).xpath('//div[@id="articlelistnew"]/div['+str(i)+']/span[5]').extract():
             url = 'http://guba.eastmoney.com' + Selector(response).xpath('//div[@id="articlelistnew"]/div['+str(i)+']/span[3]/a/@href').extract()[0]
+            a = len(Selector(response).xpath('//div[@id="articlelistnew"]/div/span[5]').extract())
+            item['number'] = [int(Selector(response).xpath(u'//div[@class="pager"]/text()').extract()[0][28:-3]),(int(response.url[42:-5])-1)*80+a-1,int(response.url[42:-5])]
             yield Request(url, meta={'item':item}, callback=self.parse_getxinwen)
-            time.sleep(1)
             i = i + 1
     def parse_getxinwen(self,response):
         item = response.meta['item']
@@ -65,8 +55,11 @@ class XinwenSpider(BaseSpider):
         for key in item['xinwen']:
             if key == time0:
                 content = ''
-                for data in Selector(response).xpath('//*[@id="zwconbody"]/div/p/text()').extract():
-                    content = content + data
+                i = 0
+                while i < len(Selector(response).xpath('//p/text()').extract()) - 3:
+                    data = Selector(response).xpath('//p/text()').extract()[i]
+                    content = content + data.encode("GBK",'ignore').encode("UTF-8",'ignore')
+                    i = i + 1
                 item['xinwen'][time0].append({
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
@@ -76,10 +69,18 @@ class XinwenSpider(BaseSpider):
             else:
                 k = k + 1
         if k == len(item['xinwen'].keys()):
+            if k == 30:
+                return item
+            content = ''
+            i = 0
+            while i < len(Selector(response).xpath('//p/text()').extract()) - 3:
+                data = Selector(response).xpath('//p/text()').extract()[i]
+                content = content + data.encode("GBK",'ignore').encode("UTF-8",'ignore')
+                i = i + 1
             item['xinwen'][time0] = [{
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
-                    'content':Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract()[0],
+                    'content':content,
                     'comments':{}
                 }]
         day = item['xinwen'][time0]
@@ -102,4 +103,11 @@ class XinwenSpider(BaseSpider):
                     j = j + 1
                 break
         item['xinwen'][time0] = day
-        yield item
+        num = 0
+        for key in item['xinwen']:
+            num = num + len(item['xinwen'][key])
+        if item['number'][1] < item['number'][0] and num == item['number'][1]:
+            url = "http://guba.eastmoney.com/list,"+item['_id']+",1,f_"+str(item['number'][2]+1)+".html"
+            return Request(url, meta={'item':item}, callback=self.parse_xinwen)
+        else:
+            return item

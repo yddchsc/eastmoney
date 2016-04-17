@@ -5,39 +5,28 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spider import BaseSpider
-import ghost
-from PySide import QtWebKit
+import json
 
-# import sys
-
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
-
-class GongsigonggaoSpider(BaseSpider):
+class GongsigonggaoSpider(Spider):
     name = "gongsigonggao"
     allowed_domains = ["eastmoney.com"]
     start_urls = [
-        "http://data.eastmoney.com/stock/stockstatistic.html"
-    ]  
+        "http://datainterface3.eastmoney.com/EM_DataCenter_V3/api/LHBXQSUM/GetLHBXQSUM?tkn=eastmoney&mkt=0&dateNum=&startDateTime=2016-01-15&endDateTime=2016-04-15&sortRule=1&sortColumn=&pageNum=1&pageSize=50&cfg=lhbxqsum"
+    ]    
     def parse(self, response):
-        # get stock link
-        i = 1
-        while Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]:
-            url = Selector(response).xpath('//*[@id="dt_1"]/tbody/tr['+str(i)+']/td[2]/a/@href').extract()[0]
-            i = i + 1
-            yield Request(url, callback=self.parse_stock)
+        r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
+        p = 0
+        while p < 3:
+            url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
+            item = EastmoneyItem()
+            item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
+            item['name'] = r['Data'][0]['Data'][p].split('|')[1]       
+            yield Request(url, meta={'item':item}, callback=self.parse_stock)
+            p = p + 1
     def parse_stock(self,response):
-        hxs=Selector(text=response.body)
-        codes = hxs.xpath('//div[@class="qphox header-title mb7"]')
-        item = EastmoneyItem()
-        for code in codes:
-            item['_id'] = code.xpath(
-                '//*[@id="code"]/text()').extract()[0]
-            item['name'] = code.xpath(
-                '//h2/text()').extract()[0]
-        url = Selector(response).xpath('//*[@class="fr w390 mb10"]/div/a/@href').extract()[0]
-        yield Request(url, meta={'item':item}, callback=self.parse_gongsigonggao)
+        item = response.meta['item']
+        url = "http://data.eastmoney.com/notice/"+item['_id']+".html"
+        return Request(url, meta={'item':item}, callback=self.parse_gongsigonggao)
     def parse_gongsigonggao(self,response):
         item = response.meta['item']
         i = 1
@@ -83,7 +72,7 @@ class GongsigonggaoSpider(BaseSpider):
             i = i + 1
         day[str(sStr1)] = gongsigonggao
         item['gongsigonggao'] = day
-        if Selector(response).xpath(u'//*[@id="PageCont"]/a[.="下一页"]/@href').extract():
+        if Selector(response).xpath(u'//*[@id="PageCont"]/a[.="下一页"]/@href').extract() and Selector(response).xpath(u'//*[@id="PageCont"]/a[.="下一页"]/@href').extract()[0] != "javascript:void(0);":
             url = u'http://data.eastmoney.com'+Selector(response).xpath(u'//*[@id="PageCont"]/a[.="下一页"]/@href').extract()[0]
         else:
             return item
