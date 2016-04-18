@@ -21,10 +21,9 @@ class GuyouhuiSpider(Spider):
             url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
             item = EastmoneyItem()
             item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
-            item['name'] = r['Data'][0]['Data'][p].split('|')[1]       
+            item['name'] = r['Data'][0]['Data'][p].split('|')[1]
             yield Request(url, meta={'item':item}, callback=self.parse_stock)
             p = p + 1
-            break
     def parse_stock(self,response):
         item = response.meta['item']
         item['number'] = {}

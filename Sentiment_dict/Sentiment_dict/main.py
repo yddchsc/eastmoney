@@ -127,19 +127,24 @@ weibo_sent = "这手机的画面挺好，操作也比较流畅。不过拍照真
 score = single_review_sentiment_score(weibo_sent)
 print score
 """
-
-# 分析test_data.txt 中的所有微博，返回一个列表，列表中元素为（分值，微博）元组
-def run_score():
+def get_news():
 	conn = pymongo.Connection("127.0.0.1",27017)
 	db = conn.eastmoney #连接库
 	xin = db.xinwen.find()
 	gu = db.guyouhui.find()
+# 分析test_data.txt 中的所有微博，返回一个列表，列表中元素为（分值，微博）元组
+def run_score(xin,gu):
 	contents = []
-	for content in fp_test.readlines():
-		content = content.strip()
-		content = content.decode("utf-8")
-		contents.append(content)
-	fp_test.close()
+	for news in xin:
+		for content in news['xinwen']
+			content = content['content'].strip()
+			content = content.decode("utf-8")
+			contents.append(content)
+	for news in gu:
+		for content in news['guyouhui']
+			content = content['content'].strip()
+			content = content.decode("utf-8")
+			contents.append(content)
 	results = []
 	for content in contents:
 		score = single_review_sentiment_score(content)  # 对每条微博调用函数求得打分
