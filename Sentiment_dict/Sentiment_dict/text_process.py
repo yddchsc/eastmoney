@@ -3,12 +3,10 @@ __author__ = 'Bai Chenjia'
 
 import jieba
 import jieba.posseg as pseg
-print "加载用户词典..."
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
-jieba.load_userdict('C://Python27/Lib/site-packages/jieba/user_dict/pos_dict.txt')
-jieba.load_userdict('C://Python27/Lib/site-packages/jieba/user_dict/neg_dict.txt')
+print "Loading user dict"
+
+#jieba.load_userdict('D://sf/python2.7/Lib/site-packages/jieba/user_dict/pos_dict.txt')
+#jieba.load_userdict('D://sf/python2.7/Lib/site-packages/jieba/user_dict/neg_dict.txt')
 
 # 分词，返回List
 def segmentation(sentence):
@@ -30,12 +28,12 @@ def postagger(sentence):
 
 # 句子切分
 def cut_sentence(words):
-	words = words.decode('utf8')
+	words = words.decode("utf-8")
 	start = 0
 	i = 0
 	token = 'meaningless'
 	sents = []
-	punt_list = ',.!?;~，。！？；～… '.decode('utf8')
+	punt_list = ',.!?;~，。！？；～… '.decode("utf-8")
 	#print "punc_list", punt_list
 	for word in words:
 		#print "word", word
@@ -70,7 +68,7 @@ def read_lines(filename):
 
 # 去除停用词
 def del_stopwords(seg_sent):
-	stopwords = read_lines("f://Sentiment_dict/emotion_dict/stop_words.txt")  # 读取停用词表
+	stopwords = read_lines("emotion_dict/stop_words.txt")  # 读取停用词表
 	new_sent = []   # 去除停用词后的句子
 	for word in seg_sent:
 		if word in stopwords:
@@ -83,17 +81,17 @@ def del_stopwords(seg_sent):
 def read_quanzhi(request):
 	result_dict = []
 	if request == "one":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/most.txt")
+		result_dict = read_lines("degree_dict/most.txt")
 	elif request == "two":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/very.txt")
+		result_dict = read_lines("degree_dict/very.txt")
 	elif request == "three":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/more.txt")
+		result_dict = read_lines("degree_dict/more.txt")
 	elif request == "four":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/ish.txt")
+		result_dict = read_lines("degree_dict/ish.txt")
 	elif request == "five":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/insufficiently.txt")
+		result_dict = read_lines("degree_dict/insufficiently.txt")
 	elif request == "six":
-		result_dict = read_lines("f://emotion/mysite/Sentiment_dict/degree_dict/inverse.txt")
+		result_dict = read_lines("degree_dict/inverse.txt")
 	else:
 		pass
 	return result_dict

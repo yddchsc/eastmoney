@@ -8,26 +8,15 @@ import pymongo
 # 1.读取情感词典和待处理文件
 # 情感词典
 print "reading..."
-posdict = tp.read_lines("../emotion_dict/pos_all_dict.txt")
-negdict = tp.read_lines("../emotion_dict/neg_all_dict.txt")
+posdict = tp.read_lines("emotion_dict/pos_all_dict.txt")
+negdict = tp.read_lines("emotion_dict/neg_all_dict.txt")
 # 程度副词词典
-mostdict = tp.read_lines('../degree_dict/most.txt')   # 权值为2
-verydict = tp.read_lines('../degree_dict/very.txt')   # 权值为1.5
-moredict = tp.read_lines('../degree_dict/more.txt')   # 权值为1.25
-ishdict = tp.read_lines('../degree_dict/ish.txt')   # 权值为0.5
-insufficientdict = tp.read_lines('../degree_dict/insufficiently.txt')  # 权值为0.25
-inversedict = tp.read_lines('../degree_dict/inverse.txt')  # 权值为-1
-
-# 情感级别
-emotion_level1 = "悲伤。在这个级别的人过的是八辈子都懊丧和消沉的生活。这种生活充满了对过去的懊悔、自责和悲恸。在悲伤中的人，看这个世界都是灰黑色的。"
-emotion_level2 = "愤怒。如果有人能跳出冷漠和内疚的怪圈，并摆脱恐惧的控制，他就开始有欲望了，而欲望则带来挫折感，接着引发愤怒。愤怒常常表现为怨恨和复仇心里，它是易变且危险的。愤怒来自未能满足的欲望，来自比之更低的能量级。挫败感来自于放大了欲望的重要性。愤怒很容易就导致憎恨，这会逐渐侵蚀一个人的心灵。"
-emotion_level3 = "淡定。到达这个能级的能量都变得很活跃了。淡定的能级则是灵活和无分别性的看待现实中的问题。到来这个能级，意味着对结果的超然，一个人不会再经验挫败和恐惧。这是一个有安全感的能级。到来这个能级的人们，都是很容易与之相处的，而且让人感到温馨可靠,这样的人总是镇定从容。他们不会去强迫别人做什么。"
-emotion_level4 = "平和。他感觉到所有的一切都生机勃勃并光芒四射，虽然在其他人眼里这个世界还是老样子，但是在这人眼里世界却是一个。所以头脑保持长久的沉默，不再分析判断。观察者和被观察者成为同一个人，观照者消融在观照中，成为观照本身。"
-emotion_level5 = "喜悦。当爱变得越来越无限的时候，它开始发展成为内在的喜悦。这是在每一个当下，从内在而非外在升起的喜悦。这个能级的人的特点是，他们具有巨大的耐性，以及对一再显现的困境具有持久的乐观态度，以及慈悲。同时发生着。在他们开来是稀松平常的作为，却会被平常人当成是奇迹来看待。"
-# 情感波动级别
-emotion_level6 = "情感波动很小，个人情感是不易改变的、经得起考验的。能够理性的看待周围的人和事。"
-emotion_level7 = "情感波动较大，周围的喜悦或者悲伤都能轻易的感染他，他对周围的事物有敏感的认知。"
-
+mostdict = tp.read_lines('degree_dict/most.txt')   # 权值为2
+verydict = tp.read_lines('degree_dict/very.txt')   # 权值为1.5
+moredict = tp.read_lines('degree_dict/more.txt')   # 权值为1.25
+ishdict = tp.read_lines('degree_dict/ish.txt')   # 权值为0.5
+insufficientdict = tp.read_lines('degree_dict/insufficiently.txt')  # 权值为0.25
+inversedict = tp.read_lines('degree_dict/inverse.txt')  # 权值为-1
 
 # 2.程度副词处理，根据程度副词的种类不同乘以不同的权值
 def match(word, sentiment_value):
@@ -127,131 +116,148 @@ weibo_sent = "这手机的画面挺好，操作也比较流畅。不过拍照真
 score = single_review_sentiment_score(weibo_sent)
 print score
 """
-def get_news():
-	conn = pymongo.Connection("127.0.0.1",27017)
+
+# 分析test_data.txt 中的所有微博，返回一个列表，列表中元素为（分值，微博）元组
+def run_score():
+	conn = pymongo.MongoClient("127.0.0.1",27017)
 	db = conn.eastmoney #连接库
 	xin = db.xinwen.find()
 	gu = db.guyouhui.find()
-# 分析test_data.txt 中的所有微博，返回一个列表，列表中元素为（分值，微博）元组
-def run_score(xin,gu):
-	contents = []
+	contents = {}
+	xinresults = []
+	j = 0
 	for news in xin:
-		for content in news['xinwen']
-			content = content['content'].strip()
-			content = content.decode("utf-8")
-			contents.append(content)
+		xinresults.append({'id':news['_id'],'name':news['name'],'score':{}})
+		for key in news['xinwen']:
+			contents[key] = ""
+			i = 0
+			while i < len(news['xinwen'][key]):
+				content = news['xinwen'][key][i]['content'].strip()
+				content = content.encode("UTF-8",'ignore')
+				contents[key] = contents[key] + "。" + content
+				i = i + 1
+			score = single_review_sentiment_score(contents[key])  # 对每条微博调用函数求得打分
+			xinresults[j]['score'][key] = score # 形成（分数，微博）元组
+		j = j + 1
+	comments = {}
+	guresults = []
+	j = 0
 	for news in gu:
-		for content in news['guyouhui']
-			content = content['content'].strip()
-			content = content.decode("utf-8")
-			contents.append(content)
-	results = []
-	for content in contents:
-		score = single_review_sentiment_score(content)  # 对每条微博调用函数求得打分
-		results.append((score, content))   # 形成（分数，微博）元组
-	return results
+		guresults.append({'id':news['_id'],'name':news['name'],'score':{}})
+		for key in news['guyouhui']:
+			comments[key] = ""
+			i = 0
+			while i < len(news['guyouhui'][key]):
+				content = news['guyouhui'][key][i]['content'].strip()
+				content = content.encode("UTF-8",'ignore')
+				comments[key] = comments[key] + "。" + content
+				for data in news['guyouhui'][key][i]['comments']:
+					content = news['guyouhui'][key][i]['comments'][data]['comment'].strip()
+					content = content.encode("UTF-8",'ignore')
+					comments[key] = comments[key] + "。" + content
+				i = i + 1
+			score = single_review_sentiment_score(comments[key])  #调用函数求得打分
+			guresults[j]['score'][key] = score 
+		j = j + 1
+	return xinresults,guresults
 
 # 将（分值，句子）元组按行写入结果文件test_result.txt中
-def write_results(results):
-	fp_result = open('test_result.txt', 'w')
-	for result in results:
-		fp_result.write(str(result[0]))
+def write_results(results,filename):
+	fp_result = open(filename, 'w')
+	for key in results:
+		fp_result.write(key)
 		fp_result.write(' ')
-		fp_result.write(result[1])
+		fp_result.write(str(results[key]))
 		fp_result.write('\n')
 	fp_result.close()
 
-# 求取测试文件中的正负极性的微博比，正负极性分值的平均值比，正负分数分别的方差
-def handel_result(results):
-	# 正极性微博数量，负极性微博数量，中性微博数量，正负极性比值
-	pos_number, neg_number, mid_number, number_ratio = 0, 0, 0, 0
-	# 正极性平均得分，负极性平均得分， 比值
-	pos_mean, neg_mean, mean_ratio = 0, 0, 0
-	# 正极性得分方差，负极性得分方差
-	pos_variance, neg_variance, var_ratio = 0, 0, 0
-	pos_list, neg_list, middle_list, total_list = [], [], [], []
-	for result in results:
-		total_list.append(result[0])
-		if result[0] > 0:
-			pos_list.append(result[0])   # 正极性分值列表
-		elif result[0] < 0:
-			neg_list.append(result[0])   # 负极性分值列表
-		else:
-			middle_list.append(result[0])
-	#################################各种极性微博数量统计
-	pos_number = len(pos_list)
-	neg_number = len(neg_list)
-	mid_number = len(middle_list)
-	total_number = pos_number + neg_number + mid_number
-	number_ratio = pos_number/neg_number
-	pos_number_ratio = round(float(pos_number)/float(total_number), 2)
-	neg_number_ratio = round(float(neg_number)/float(total_number), 2)
-	mid_number_ratio = round(float(mid_number)/float(total_number), 2)
-	text_pos_number = "积极微博条数为 " + str(pos_number) + " 条，占全部微博比例的 %" + str(pos_number_ratio*100)
-	text_neg_number = "消极微博条数为 " + str(neg_number) + " 条，占全部微博比例的 %" + str(neg_number_ratio*100)
-	text_mid_number = "中性情感微博条数为 " + str(mid_number) + " 条，占全部微博比例的 %" + str(mid_number_ratio*100)
-	##################################正负极性平均得分统计
-	pos_array = np.array(pos_list)
-	neg_array = np.array(neg_list)    # 使用numpy导入，便于计算
-	total_array = np.array(total_list)
-	pos_mean = pos_array.mean()
-	neg_mean = neg_array.mean()
-	total_mean = total_array.mean()   # 求单个列表的平均值
-	mean_ratio = pos_mean/neg_mean
-	if pos_mean <= 6:                 # 赋予不同的情感等级
-		text_pos_mean = emotion_level4
-	else:
-		text_pos_mean = emotion_level5
-	if neg_mean >= -6:
-		text_neg_mean = emotion_level2
-	else:
-		text_neg_mean = emotion_level1
-	if total_mean <= 6 and total_mean >= -6:
-		text_total_mean = emotion_level3
-	elif total_mean > 6:
-		text_total_mean = emotion_level4
-	else:
-		text_total_mean = emotion_level2
-	##################################正负进行方差计算
-	pos_variance = pos_array.var(axis=0)
-	neg_variance = neg_array.var(axis=0)
-	total_variance = total_array.var(axis=0)
-	var_ratio = pos_variance/neg_variance
-	#print "pos_variance:", pos_variance, "neg_variance:", neg_variance, "var_ration:", var_ratio
-	if total_variance > 10:            # 赋予不同的情感波动级别
-		text_total_var = emotion_level7
-	else:
-		text_total_var = emotion_level6
-	################################构成字典返回
-	result_dict = {}
-	result_dict['pos_number'] = pos_number   # 正向微博数
-	result_dict['neg_number'] = neg_number   # 负向微博数
-	result_dict['mid_number'] = mid_number   # 中性微博数
-	result_dict['number_ratio'] = round(number_ratio, 1)  # 正负微博数之比，保留一位小数四舍五入
-	result_dict['pos_mean'] = round(pos_mean, 1)  # 积极情感平均分
-	result_dict['neg_mean'] = round(neg_mean, 1)  # 消极情感平均分
-	result_dict['total_mean'] = round(total_mean, 1) # 总的情感平均得分
-	result_dict['mean_ratio'] = abs(round(mean_ratio, 1))  # 积极情感平均分/消极情感平均分
-	result_dict['pos_variance'] = round(pos_variance, 1)  # 积极得分方差
-	result_dict['neg_variance'] = round(neg_variance, 1)  # 消极得分方差
-	result_dict['total_variance'] = round(total_variance, 1) # 总的情感得分方差
-	result_dict['var_ratio'] = round(var_ratio, 1)  # 积极得分方差/消极得分方差
-
-	result_dict['text_pos_number'] = text_pos_number   # 各种情感评价
-	result_dict['text_neg_number'] = text_neg_number
-	result_dict['text_mid_number'] = text_mid_number
-	result_dict['text_pos_mean'] = text_pos_mean
-	result_dict['text_neg_mean'] = text_neg_mean
-	result_dict['text_total_mean'] = text_total_mean
-	result_dict['text_total_var'] = text_total_var
-	"""
-	for key in result_dict.keys():
-		print 'key = %s , value = %s ' % (key, result_dict[key])
-	"""
-	return result_dict
-
+def prepare(xinresults,guresults):
+	conn = pymongo.MongoClient("127.0.0.1",27017)
+	db = conn.eastmoney #连接库
+	geguyanbao = db.geguyanbao.find()
+	geguyaowen = db.geguyaowen.find()
+	gongsigonggao = db.gongsigonggao.find()
+	hangyeyaowen = db.hangyeyaowen.find()
+	number = len(guresults)
+	a = {}
+	for data in guresults:
+		for i in xrange(0,number):
+			if data['id'] == geguyanbao[i]['_id']:
+				a[data['id']] = {}
+				for key in data['score']:
+					if geguyanbao[i]['geguyanbao'].has_key(key):
+						a[data['id']][key] = geguyanbao[i]['geguyanbao'][key]
+					else:
+						a[data['id']][key] = 0
+				break
+	geguyanbao = a
+	a = {}
+	for data in guresults:
+		for i in xrange(0,number):
+			if data['id'] == geguyaowen[i]['_id']:
+				a[data['id']] = {}
+				for key in data['score']:
+					if geguyaowen[i]['geguyaowen'].has_key(key):
+						a[data['id']][key] = geguyaowen[i]['geguyaowen'][key]
+					else:
+						a[data['id']][key] = 0
+				break
+	geguyaowen = a
+	a = {}
+	for data in guresults:
+		for i in xrange(0,number):
+			if data['id'] == gongsigonggao[i]['_id']:
+				a[data['id']] = {}
+				for key in data['score']:
+					if gongsigonggao[i]['gongsigonggao'].has_key(key):
+						a[data['id']][key] = gongsigonggao[i]['gongsigonggao'][key]
+					else:
+						a[data['id']][key] = 0
+				break
+	gongsigonggao = a
+	a = {}
+	for data in guresults:
+		for i in xrange(0,number):
+			if data['id'] == hangyeyaowen[i]['_id']:
+				a[data['id']] = {}
+				for key in data['score']:
+					if hangyeyaowen[i]['hangyeyaowen'].has_key(key):
+						a[data['id']][key] = hangyeyaowen[i]['hangyeyaowen'][key]
+					else:
+						a[data['id']][key] = 0
+				break
+	hangyeyaowen = a
+	a = {}
+	for data in guresults:
+		for i in xrange(0,number):
+			if data['id'] == xinresults[i]['id']:
+				a[data['id']] = {}
+				for key in data['score']:
+					if xinresults[i]['score'].has_key(key):
+						a[data['id']][key] = xinresults[i]['score'][key]
+					else:
+						a[data['id']][key] = 0
+				break
+	xinresults = a
+	return geguyanbao,geguyaowen,gongsigonggao,hangyeyaowen,xinresults
 
 if __name__ == '__main__':
-	results = run_score()     # 计算每句话的极性得分，返回list，元素是（得分，微博）
-	write_results(results)    # 将每条微博的极性得分都写入文件
-	result_dict = handel_result(results)   # 计算结果的各种参数，返回字典
+	xinresults,guresults = run_score()     # 计算每句话的极性得分，返回list，元素是（得分，微博）
+	geguyanbao,geguyaowen,gongsigonggao,hangyeyaowen,xinresults = prepare(xinresults,guresults)
+	for data in guresults:
+		result = {}
+		for key in data['score']:
+			result[key] = 0
+			if geguyanbao[data['id']][key] > np.asarray(geguyanbao[data['id']].values()).mean() + 0.2 * np.asarray(geguyanbao[data['id']].values()).std():
+				result[key] = result[key] + 1
+			if geguyaowen[data['id']][key] > np.asarray(geguyaowen[data['id']].values()).mean() + 0.2 * np.asarray(geguyaowen[data['id']].values()).std():
+				result[key] = result[key] + 1
+			if gongsigonggao[data['id']][key] > np.asarray(gongsigonggao[data['id']].values()).mean() + 0.2 * np.asarray(gongsigonggao[data['id']].values()).std():
+				result[key] = result[key] + 1
+			if hangyeyaowen[data['id']][key] > np.asarray(hangyeyaowen[data['id']].values()).mean() + 0.2 * np.asarray(hangyeyaowen[data['id']].values()).std():
+				result[key] = result[key] + 1
+			if xinresults[data['id']][key] > np.asarray(xinresults[data['id']].values()).mean() + 0.2 * np.asarray(xinresults[data['id']].values()).std():
+				result[key] = result[key] + 1
+			if data['score'][key] > np.asarray(data['score'].values()).mean() + 0.2 * np.asarray(data['score'].values()).std():
+				result[key] = result[key] + 1
+		write_results(result,data['name']+'.txt')

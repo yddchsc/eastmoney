@@ -3,7 +3,6 @@ import pymongo
  
 from scrapy.conf import settings
 from scrapy.exceptions import DropItem
-from scrapy import log
 from pymongo import MongoClient
 
 class GeguyaowenPipeline(object):
@@ -26,8 +25,6 @@ class GeguyaowenPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
         return item
 class HangyeyaowenPipeline(object):
     MONGODB_SERVER = "localhost"
@@ -52,8 +49,6 @@ class HangyeyaowenPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
         return item
 class GongsigonggaoPipeline(object):
     MONGODB_SERVER = "localhost"
@@ -78,8 +73,6 @@ class GongsigonggaoPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
         return item
 class GeguyanbaoPipeline(object):
     MONGODB_SERVER = "localhost"
@@ -104,8 +97,6 @@ class GeguyanbaoPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
         return item
 class GuyouhuiPipeline(object):
     MONGODB_SERVER = "localhost"
@@ -130,9 +121,7 @@ class GuyouhuiPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
-        return item
+        # return item
 class XinwenPipeline(object):
     MONGODB_SERVER = "localhost"
     MONGODB_PORT = 27017
@@ -156,6 +145,4 @@ class XinwenPipeline(object):
                 raise DropItem("Missing {0}!".format(data))
         if valid:
             self.collection.save(dict(item))
-            log.msg("Name added to MongoDB database!",
-                    level=log.DEBUG, spider=spider)
-        return item
+        # return item

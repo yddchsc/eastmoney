@@ -89,7 +89,7 @@ class GuyouhuiSpider(Spider):
                     for data in Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div[3]/child::text()').extract():
                         comment = comment + data
                     day[i]['comments'][time1] = {
-                        'name':name,
+                        #'name':name,
                         'comment':comment
                     }
                     j = j + 1

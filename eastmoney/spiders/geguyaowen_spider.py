@@ -9,6 +9,7 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 import json
 
 class GeguyaowenSpider(CrawlSpider):
+    DOWNLOAD_DELAY = 10
     name = "geguyaowen"
     allowed_domains = ["eastmoney.com"]
     start_urls = [
