@@ -5,25 +5,31 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spiders import BaseSpider
+from scrapy.spiders import CrawlSpider, Rule
 import json
 
-class GuyouhuiSpider(Spider):
+class GuyouhuiSpider(CrawlSpider):
     name = "guyouhui"
     allowed_domains = ["eastmoney.com"]
     start_urls = [
         "http://datainterface3.eastmoney.com/EM_DataCenter_V3/api/LHBXQSUM/GetLHBXQSUM?tkn=eastmoney&mkt=0&dateNum=&startDateTime=2016-01-15&endDateTime=2016-04-15&sortRule=1&sortColumn=&pageNum=1&pageSize=50&cfg=lhbxqsum"
     ]    
     def parse(self, response):
-        r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
-        p = 0
-        while p < 3:
-            url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
+        # r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
+        # p = 0
+        # while p < 3:
+        #     url = "http://quote.eastmoney.com/"+r['Data'][0]['Data'][p].split('|')[0]+".html"
+        #     item = EastmoneyItem()
+        #     item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
+        #     item['name'] = r['Data'][0]['Data'][p].split('|')[1]
+        #     yield Request(url, meta={'item':item}, callback=self.parse_stock)
+        #     p = p + 1
+        pages = [["http://quote.eastmoney.com/000002.html","000002",u"万科A"],["http://quote.eastmoney.com/600104.html","600104",u"上汽集团"],["http://quote.eastmoney.com/600519.html","600519",u"贵州茅台"]]
+        for page in pages: 
             item = EastmoneyItem()
-            item['_id'] = r['Data'][0]['Data'][p].split('|')[0]
-            item['name'] = r['Data'][0]['Data'][p].split('|')[1]
-            yield Request(url, meta={'item':item}, callback=self.parse_stock)
-            p = p + 1
+            item['_id'] = page[1] #得到股票的代码
+            item['name'] = page[2]  #得到股票的名字    
+            yield Request(page[0], meta={'item':item}, callback=self.parse_stock)
     def parse_stock(self,response):
         item = response.meta['item']
         item['number'] = {}
@@ -59,7 +65,7 @@ class GuyouhuiSpider(Spider):
                     content = content + data
                 item['guyouhui'][time0].append({
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
-                    'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
+                    #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
                     'comments':{}
                 })
@@ -71,7 +77,7 @@ class GuyouhuiSpider(Spider):
                 return item
             item['guyouhui'][time0] = [{
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
-                    'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
+                    #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract()[0],
                     'comments':{}
                 }]

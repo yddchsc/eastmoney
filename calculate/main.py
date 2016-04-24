@@ -246,7 +246,12 @@ if __name__ == '__main__':
 	geguyanbao,geguyaowen,gongsigonggao,hangyeyaowen,xinresults = prepare(xinresults,guresults)
 	for data in guresults:
 		result = {}
+		print data['name']
+		print "-----------------------------"
+		print u"日期      新闻（变化率） 要闻（变化率） 公告（变化率） 研报（变化率） 新闻情感  讨论情感"
+		print "-----------------------------"
 		for key in data['score']:
+			print key+"    "+str(hangyeyaowen[data['id']][key])+"    "+str(geguyaowen[data['id']][key])+"    "+str(gongsigonggao[data['id']][key])+"    "+str(geguyanbao[data['id']][key])+"    "+str(xinresults[data['id']][key])+"    "+str(data['score'][key])
 			result[key] = 0
 			if geguyanbao[data['id']][key] > np.asarray(geguyanbao[data['id']].values()).mean() + 0.2 * np.asarray(geguyanbao[data['id']].values()).std():
 				result[key] = result[key] + 1
