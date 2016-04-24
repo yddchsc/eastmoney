@@ -33,14 +33,14 @@ class HangyeyaowenSpider(CrawlSpider):
     def parse_stock(self,response):
         item = response.meta['item']
         if item['_id'] != "000002":
-            url = "http://quote.eastmoney.com"+Selector(response).xpath('//body/@onload').extract()[0][17:-1]
+            url = "http://quote.eastmoney.com"+Selector(response).xpath('//body/@onload').extract()[0][17:-1] # 页面用js的onload函数跳转到主页面，截取这个链接。
         else:
             url = "http://quote.eastmoney.com/SZ000002.html"
         return Request(url, meta={'item':item}, callback=self.parse_second)
     def parse_second(self,response):
         item = response.meta['item']
-        url = Selector(response).xpath('//a[@id="cgyyt2"]/@href').extract()[0]
-        if url == "http://stock.eastmoney.com/hangye.html":
+        url = Selector(response).xpath('//a[@id="cgyyt2"]/@href').extract()[0] # 爬取行业要闻的链接
+        if url == "http://stock.eastmoney.com/hangye.html": #如果没有行业要闻，跳转到行业的主页面，则返回要闻数目为0
             item['hangyeyaowen'] = {"null":0}
             return item
         else:
