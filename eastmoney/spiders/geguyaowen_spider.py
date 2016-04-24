@@ -59,7 +59,7 @@ class GeguyaowenSpider(CrawlSpider):
                     break
             loo = int(json.loads(json.dumps(eval(r)))['PageNo']) # 获得当前页码
             if (int(json.loads(json.dumps(eval(r)))['Pages']) / 100) * 100 == int(json.loads(json.dumps(eval(r)))['Pages']):
-                pages = int(json.loads(json.dumps(eval(r)))['Pages']) / 100
+                pages = int(json.loads(json.dumps(eval(r)))['Pages']) / 100 # 判断个股要闻总数是否为100的倍数来确定总页数
             else:
                 pages = int(json.loads(json.dumps(eval(r)))['Pages']) / 100 + 1
             if loo < pages:
