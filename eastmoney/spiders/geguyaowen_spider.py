@@ -14,7 +14,7 @@ class GeguyaowenSpider(CrawlSpider):
     allowed_domains = ["eastmoney.com"]
     start_urls = [
         "http://datainterface3.eastmoney.com/EM_DataCenter_V3/api/LHBXQSUM/GetLHBXQSUM?tkn=eastmoney&mkt=0&dateNum=&startDateTime=2016-01-15&endDateTime=2016-04-15&sortRule=1&sortColumn=&pageNum=1&pageSize=50&cfg=lhbxqsum"
-    ]    
+    ] #龙虎榜的数据请求链接   
     def parse(self, response):
         # r = json.loads(Selector(response).xpath('//p/text()').extract()[0])
         # p = 0

@@ -32,7 +32,10 @@ class HangyeyaowenSpider(CrawlSpider):
             yield Request(page[0], meta={'item':item}, callback=self.parse_stock)
     def parse_stock(self,response):
         item = response.meta['item']
-        url = "http://quote.eastmoney.com"+Selector(response).xpath('//body/@onload').extract()[0][17:-1]
+        if item['_id'] != "000002":
+            url = "http://quote.eastmoney.com"+Selector(response).xpath('//body/@onload').extract()[0][17:-1]
+        else:
+            url = "http://quote.eastmoney.com/SZ000002.html"
         return Request(url, meta={'item':item}, callback=self.parse_second)
     def parse_second(self,response):
         item = response.meta['item']
