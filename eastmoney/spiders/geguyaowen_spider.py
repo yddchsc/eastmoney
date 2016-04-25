@@ -25,6 +25,8 @@ class GeguyaowenSpider(CrawlSpider):
         #     item['name'] = r['Data'][0]['Data'][p].split('|')[1]       
         #     yield Request(url, meta={'item':item}, callback=self.parse_stock)
         #     p = p + 1
+
+        # 如果想要爬取龙虎榜单上的股票信息，去掉上面的注释，将3改为想要爬取的股票的数量。并注释掉下面的6行代码。
         pages = [["http://quote.eastmoney.com/000002.html","000002",u"万科A"],["http://quote.eastmoney.com/600104.html","600104",u"上汽集团"],["http://quote.eastmoney.com/600519.html","600519",u"贵州茅台"]]
         for page in pages: 
             item = EastmoneyItem()
@@ -62,21 +64,21 @@ class GeguyaowenSpider(CrawlSpider):
                 pages = int(json.loads(json.dumps(eval(r)))['Pages']) / 100 # 判断个股要闻总数是否为100的倍数来确定总页数
             else:
                 pages = int(json.loads(json.dumps(eval(r)))['Pages']) / 100 + 1
-            if loo < pages:
+            if loo < pages: # 确定当前页面要闻数量
                 num = 100
             else:
                 num = int(json.loads(json.dumps(eval(r)))['Pages']) - (loo-1) * 100
             lo = 0
             while lo < num:
-                data = json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][0:4]+"-"+json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][4:6]+"-"+json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][6:8]
-                if cmp(data,sStr1) == 0:
+                data = json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][0:4]+"-"+json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][4:6]+"-"+json.loads(json.dumps(eval(r)))['DataResult'][lo]['ShowTime'][6:8] # 从数据中截取该条要闻的日期
+                if cmp(data,sStr1) == 0: # 判断日期是否相同，相同则数量加一
                     geguyaowen = geguyaowen + 1
-                else:
+                else: # 不同则将数量存入字典，并将新日期赋值给sStr1,数量归1。
                     day[str(sStr1)] = geguyaowen
                     k = 0
                     for key in day:
                         k = k + 1
-                    if k >= 30:
+                    if k >= 30: # 判断是否已经取满30天，取满则停止抓取数据，返回item
                         item['geguyaowen'] = day
                         return item
                         break
@@ -86,7 +88,7 @@ class GeguyaowenSpider(CrawlSpider):
             day[str(sStr1)] = geguyaowen
         day[str(sStr1)] = geguyaowen
         item['geguyaowen'] = day
-        if r != "{\"State\":\"1\",\"KeyWord\":\"("+item['_id']+")("+item['name']+")\",\"SearchType\":2,\"SearchMode\":1,\"SortType\":\"1\",\"PageNo\":\"1\",\"Pages\":0,\"DataCount\":0,\"DataResult\":[]}" and loo < pages:
+        if r != "{\"State\":\"1\",\"KeyWord\":\"("+item['_id']+")("+item['name']+")\",\"SearchType\":2,\"SearchMode\":1,\"SortType\":\"1\",\"PageNo\":\"1\",\"Pages\":0,\"DataCount\":0,\"DataResult\":[]}" and loo < pages: # 判断是否还有下一页，有则构造下一页的请求链接
             url = "http://so.eastmoney.com/Search.ashx?qw=("+item['_id']+")("+item['name']+")&qt=2&sf=0&st=1&cpn="+str(loo+1)+"&pn=100&f=0&p=0"
             return Request(url, meta={'item':item}, callback=self.parse_geguyaowen)
         else:

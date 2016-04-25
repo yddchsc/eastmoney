@@ -24,6 +24,8 @@ class GeguyanbaoSpider(CrawlSpider):
         #     item['name'] = r['Data'][0]['Data'][p].split('|')[1]  #得到股票的名字    
         #     yield Request(url, meta={'item':item}, callback=self.parse_stock)
         #     p = p + 1
+
+        # 如果想要爬取龙虎榜单上的股票信息，去掉上面的注释，将3改为想要爬取的股票的数量。并注释掉下面的6行代码。
         pages = [["http://quote.eastmoney.com/000002.html","000002",u"万科A"],["http://quote.eastmoney.com/600104.html","600104",u"上汽集团"],["http://quote.eastmoney.com/600519.html","600519",u"贵州茅台"]]
         for page in pages: 
             item = EastmoneyItem()
