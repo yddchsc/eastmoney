@@ -26,6 +26,7 @@ a crawler by scrapy of eastmoney.com
 + Windows7
 + python2.7.8
 + scrapy0.24.6
++ pip install scrapy-crawlera
 + pymongo
 	+ [安装MongoDB](http://www.runoob.com/mongodb/mongodb-window-install.html)
 	+ MongoChef：MongoDB的可视化工具，选择性安装
