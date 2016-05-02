@@ -5,7 +5,7 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.contrib.spiders import CrawlSpider, Rule
 import json
 
 class GongsigonggaoSpider(CrawlSpider):

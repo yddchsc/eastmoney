@@ -5,7 +5,7 @@ from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import Selector
 from eastmoney.items import EastmoneyItem
 from scrapy.http import Request
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.contrib.spiders import CrawlSpider, Rule
 import json
 
 class XinwenSpider(CrawlSpider):
@@ -67,7 +67,7 @@ class XinwenSpider(CrawlSpider):
                 i = 0
                 while i < len(Selector(response).xpath('//p/text()').extract()) - 3:
                     data = Selector(response).xpath('//p/text()').extract()[i]
-                    content = content + data.encode("GBK",'ignore').encode("UTF-8",'ignore')
+                    content = content + data.encode("UTF-8",'ignore')
                     i = i + 1
                 item['xinwen'][time0].append({
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
@@ -85,7 +85,7 @@ class XinwenSpider(CrawlSpider):
             i = 0
             while i < len(Selector(response).xpath('//p/text()').extract()) - 3:
                 data = Selector(response).xpath('//p/text()').extract()[i]
-                content = content + data.encode("GBK",'ignore').encode("UTF-8",'ignore')
+                content = content + data.encode("UTF-8",'ignore')
                 i = i + 1
             # 如果没有30天，在字典中添加一个键对
             item['xinwen'][time0] = [{
@@ -94,26 +94,26 @@ class XinwenSpider(CrawlSpider):
                     'content':content,
                     'comments':{} # 先初始化，后面再添加评论
                 }]
-        day = item['xinwen'][time0]
-        for i in range(0, len(day)): # 遍历这篇新闻发表日期对应的数组
-            if day[i]['title'] == Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0]:# 找到这篇新闻对应的字典
-                j = 1
-                while Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']').extract():# 逐条爬取评论
-                    time1 = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div[2]/text()').extract()[0][4:23] # 爬取评论时间
-                    if Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/a/text()').extract(): # 爬取评论者的姓名
-                        name = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/a/text()').extract()[0]
-                    else:
-                        name = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/span/text()').extract()[0]
-                    comment = ''
-                    for data in Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div[3]/child::text()').extract(): # 爬取评论的内容
-                        comment = comment + data
-                    day[i]['comments'][time1] = {
-                        'name':name,
-                        'comment':comment
-                    } # 将爬取到的内容存入字典
-                    j = j + 1
-                break
-        item['xinwen'][time0] = day
+        # day = item['xinwen'][time0]
+        # for i in range(0, len(day)): # 遍历这篇新闻发表日期对应的数组
+        #     if day[i]['title'] == Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0]:# 找到这篇新闻对应的字典
+        #         j = 1
+        #         while Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']').extract():# 逐条爬取评论
+        #             time1 = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div[2]/text()').extract()[0][4:23] # 爬取评论时间
+        #             if Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/a/text()').extract(): # 爬取评论者的姓名
+        #                name = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/a/text()').extract()[0]
+        #             else:
+        #                 name = Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div/span/span/text()').extract()[0]
+        #             comment = ''
+        #             for data in Selector(response).xpath('//*[@id="zwlist"]/div['+str(j)+']/div[3]/div/div[3]/child::text()').extract(): # 爬取评论的内容
+        #                 comment = comment + data
+        #             day[i]['comments'][time1] = {
+        #                 'name':name,
+        #                 'comment':comment
+        #             } # 将爬取到的内容存入字典
+        #             j = j + 1
+        #         break
+        # item['xinwen'][time0] = day
         num = 0
         for key in item['xinwen']:
             num = num + len(item['xinwen'][key])
