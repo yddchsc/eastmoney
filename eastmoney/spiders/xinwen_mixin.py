@@ -47,6 +47,7 @@ class XinWenMixin(object):
                     content = content + data.encode("UTF-8",'ignore')
                     i = i + 1
                 item['xinwen'][time0].append({
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
@@ -66,6 +67,7 @@ class XinWenMixin(object):
                 i = i + 1
             # 如果没有30天，在字典中添加一个键对
             item['xinwen'][time0] = [{
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,

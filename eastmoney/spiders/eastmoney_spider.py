@@ -13,21 +13,32 @@ from eastmoney import config
 from eastmoney.items import EastmoneyItem
 
 class EastMoneySpiderMixin(GeGuYanBaoMixin,
-                        GeGuYaoWenMixin,
-                        GongSiGongGaoMixin,
-                        GuYouHuiMixin,
-                        HangYeYaoWenMixin,
-                        XinWenMixin):
+                            GeGuYaoWenMixin,
+                            GongSiGongGaoMixin,
+                            GuYouHuiMixin,
+                            HangYeYaoWenMixin,
+                            XinWenMixin
+                        ):
 
     def parse_stock(self, response):
-  
-        yield self._gen_geguynbao_request(response)
-        yield self._gen_geguyaowen_request(response)
-        yield self._gen_gongsigonggao_request(response)
-        yield self._gen_guyouhui_request(response)
-        yield self._gen_xinwen_request(response)
-        yield self._gen_hangyeyaowen_request(response)
-
+        if isinstance(self,GeGuYanBaoMixin):
+            print 1
+            yield self._gen_geguynbao_request(response)
+        if isinstance(self,GeGuYaoWenMixin):
+            print 2
+            yield self._gen_geguyaowen_request(response)
+        if isinstance(self,GongSiGongGaoMixin):
+            print 3
+            yield self._gen_gongsigonggao_request(response)
+        if isinstance(self,GuYouHuiMixin):
+            print 4
+            yield self._gen_guyouhui_request(response)
+        if isinstance(self,XinWenMixin):
+            print 5
+            yield self._gen_xinwen_request(response)
+        if isinstance(self,HangYeYaoWenMixin):
+            print 6
+            yield self._gen_hangyeyaowen_request(response)
 
     def _gen_start_request(self):
         pages = config.TARGETS

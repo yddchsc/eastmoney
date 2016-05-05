@@ -18,6 +18,7 @@ class GeGuYaoWenMixin(object):
             'qw':qw,
             'qt':2,
             'sf':0,
+            'st':1,
             'cpn':1,
             'pn':100,
             'f':0,

@@ -13,7 +13,7 @@ class MongoPipeline(object):
     def __init__(self,mongo_server, mongo_port,mongo_db_name):
         client = pymongo.MongoClient(mongo_server,mongo_port)
         db = client[mongo_db_name]
-        self.connection = db['stock']
+        self.collection = db['stock']
 
     def _valid(self,item):
         for data in item:
@@ -24,7 +24,35 @@ class MongoPipeline(object):
     def process_item(self, item, spider):
         valid,data = self._valid(item)
         if valid:
-            self.connection.save(dict(item))
+            #self.connection.save(dict(item))
+            if 'xinwen' in item:
+                xinwen = item['xinwen']
+                for date in xinwen:
+                    self.collection.update_one(
+                        filter={'_id':item['_id']},
+                        update={'$push':{
+                                'xinwen':{'$each':xinwen[date]}
+                            }
+                        },
+                        upsert=True
+                    )
+            elif 'guyouhui' in item:
+                guyouhui = item['guyouhui']
+                for date in guyouhui:
+                    self.collection.update_one(
+                        filter={'_id':item['_id']},
+                        update={'$push':{
+                                'guyouhui':{'$each':guyouhui[date]}
+                            }
+                        },
+                        upsert=True
+                    )
+            else:
+                self.collection.update_one(
+                    filter={'_id':item['_id']},
+                    update={'$set':item},
+                    upsert=True
+                )
         else:
             raise DropItem("Missing {0}!".format(data))
         return item

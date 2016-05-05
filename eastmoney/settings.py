@@ -29,7 +29,7 @@ ITEM_PIPELINES = {
 	'eastmoney.pipelines.MongoPipeline':300,
 }
 
-LOG_LEVEL = 'ERROR'
+LOG_LEVEL = 'DEBUG'
  
 MONGODB_SERVER = 'localhost'
 MONGODB_PORT = 27017
@@ -105,5 +105,5 @@ COOKIES_ENABLED=False
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-SCHEDULER_PERSIST = True
+#SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.SpiderQueue"
