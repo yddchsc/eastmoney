@@ -32,6 +32,8 @@ a crawler by scrapy of eastmoney.com
 	+ MongoChef：MongoDB的可视化工具，选择性安装
 + numpy
 	+ 用来对爬取到的数据进行计算处理
++ redis
++ redis-python
 
 #问题原因
 

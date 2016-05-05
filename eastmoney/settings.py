@@ -26,18 +26,14 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 ITEM_PIPELINES = {
-	'eastmoney.pipelines.GeguyaowenPipeline':300,
-	'eastmoney.pipelines.HangyeyaowenPipeline':300,
-	'eastmoney.pipelines.GongsigonggaoPipeline':300,
-	'eastmoney.pipelines.GeguyanbaoPipeline':300,
-	'eastmoney.pipelines.GuyouhuiPipeline':300,
-	'eastmoney.pipelines.XinwenPipeline':300,
+	'eastmoney.pipelines.MongoPipeline':300,
 }
+
+LOG_LEVEL = 'ERROR'
  
 MONGODB_SERVER = 'localhost'
 MONGODB_PORT = 27017
 MONGODB_DB = 'eastmoney'
-MONGODB_COLLECTION = 'geguyaowen'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'eastmoney (+http://www.yourdomain.com)'
 
@@ -63,7 +59,7 @@ COOKIES_ENABLED=False
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
 #}
-COMMANDS_MODULE = 'eastmoney.commands'
+#COMMANDS_MODULE = 'eastmoney.commands'
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
@@ -107,3 +103,7 @@ COMMANDS_MODULE = 'eastmoney.commands'
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+SCHEDULER_PERSIST = True
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.SpiderQueue"

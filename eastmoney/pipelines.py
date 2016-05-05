@@ -5,144 +5,37 @@ from scrapy.conf import settings
 from scrapy.exceptions import DropItem
 from pymongo import MongoClient
 
-class GeguyaowenPipeline(object):
- 
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            settings['MONGODB_SERVER'],
-            settings['MONGODB_PORT']
-        )
-        db = connection[settings['MONGODB_DB']]
-        self.collection = db[settings['MONGODB_COLLECTION']]
- 
-    def process_item(self, item, spider):
-        if spider.name != 'geguyaowen':
-            return item
-        valid = True
-        for data in item:
-            if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
-        if valid:
-            self.collection.save(dict(item))
-        return item
-class HangyeyaowenPipeline(object):
-    MONGODB_SERVER = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DB = "eastmoney"
-    MONGODB_COLLECTION = "hangyeyaowen"
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            self.MONGODB_SERVER,
-            self.MONGODB_PORT
-        )
-        db = connection[self.MONGODB_DB]
-        self.collection = db[self.MONGODB_COLLECTION]
- 
-    def process_item(self, item, spider):
-        if spider.name != 'hangyeyaowen':
-            return item
-        valid = True
-        for data in item:
-            if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
-        if valid:
-            self.collection.save(dict(item))
-        return item
-class GongsigonggaoPipeline(object):
-    MONGODB_SERVER = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DB = "eastmoney"
-    MONGODB_COLLECTION = "gongsigonggao"
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            self.MONGODB_SERVER,
-            self.MONGODB_PORT
-        )
-        db = connection[self.MONGODB_DB]
-        self.collection = db[self.MONGODB_COLLECTION]
- 
-    def process_item(self, item, spider):
-        if spider.name != 'gongsigonggao':
-            return item
-        valid = True
-        for data in item:
-            if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
-        if valid:
-            self.collection.save(dict(item))
-        return item
-class GeguyanbaoPipeline(object):
-    MONGODB_SERVER = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DB = "eastmoney"
-    MONGODB_COLLECTION = "geguyanbao"
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            self.MONGODB_SERVER,
-            self.MONGODB_PORT
-        )
-        db = connection[self.MONGODB_DB]
-        self.collection = db[self.MONGODB_COLLECTION]
- 
-    def process_item(self, item, spider):
-        if spider.name != 'geguyanbao':
-            return item
-        valid = True
-        for data in item:
-            if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
-        if valid:
-            self.collection.save(dict(item))
-        return item
-class GuyouhuiPipeline(object):
-    MONGODB_SERVER = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DB = "eastmoney"
-    MONGODB_COLLECTION = "guyouhui"
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            self.MONGODB_SERVER,
-            self.MONGODB_PORT
-        )
-        db = connection[self.MONGODB_DB]
-        self.collection = db[self.MONGODB_COLLECTION]
- 
-    def process_item(self, item, spider):
-        if spider.name != 'guyouhui':
-            return item
-        valid = True
-        for data in item:
-            if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
-        if valid:
-            self.collection.save(dict(item))
-        # return item
-class XinwenPipeline(object):
-    MONGODB_SERVER = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DB = "eastmoney"
-    MONGODB_COLLECTION = "xinwen"
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            self.MONGODB_SERVER,
-            self.MONGODB_PORT
-        )
-        db = connection[self.MONGODB_DB]
-        self.collection = db[self.MONGODB_COLLECTION]
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "eastmoney"
 
-    def process_item(self, item, spider):
-        if spider.name != 'xinwen':
-            return item
-        valid = True
+class MongoPipeline(object):
+    def __init__(self,mongo_server, mongo_port,mongo_db_name):
+        client = pymongo.MongoClient(mongo_server,mongo_port)
+        db = client[mongo_db_name]
+        self.connection = db['stock']
+
+    def _valid(self,item):
         for data in item:
             if not data:
-                valid = False
-                raise DropItem("Missing {0}!".format(data))
+                return (False,data)
+        return (True,None)
+    
+    def process_item(self, item, spider):
+        valid,data = self._valid(item)
         if valid:
-            self.collection.save(dict(item))
-        # return item
+            self.connection.save(dict(item))
+        else:
+            raise DropItem("Missing {0}!".format(data))
+        return item
+
+    @classmethod
+    def from_settings(cls,settings):
+        ret = {
+            'mongo_server':settings.get('MONGODB_SERVER',MONGODB_SERVER),
+            'mongo_port':settings.get('MONGODB_PORT',MONGODB_PORT),
+            'mongo_db_name':settings.get('MONGODB_DB',MONGODB_DB),
+        }
+        return cls(**ret)
+
+
