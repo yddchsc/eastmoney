@@ -55,7 +55,7 @@ a crawler by scrapy of eastmoney.com
 	- $redis_server_host指作为redis server的ip, 本地可用localhost
 	- $spider_name指要监视的爬虫, 这里只eastmoney_redis一个
 	- 故本地测试用` python ending.py -r localhost -s eastmoney_redis`命令即可
-+ 另起一终端, 运行 python start_crawl -m $mode -s $spider_name --host $host_ip
++ 另起一终端, 运行 python start_crawl.py -m $mode -s $spider_name --host $host_ip
 	- $mode指运行模式, $mode为h则为host模式, 会立即启动爬虫, $mode为l则为leaf模式, 会等待任务队列有任务才启动爬虫
 	- $spider_name同上
 	- $host_ip指分布式模式中运行redis和mongodb的主机
