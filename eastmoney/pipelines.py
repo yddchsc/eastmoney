@@ -25,11 +25,13 @@ class MongoPipeline(object):
         valid,data = self._valid(item)
         if valid:
             #self.connection.save(dict(item))
+            fil = {'_id':item['_id']}
+            del item['_id']
             if 'xinwen' in item:
                 xinwen = item['xinwen']
                 for date in xinwen:
                     self.collection.update_one(
-                        filter={'_id':item['_id']},
+                        filter=fil,
                         update={'$push':{
                                 'xinwen':{'$each':xinwen[date]}
                             }
@@ -40,7 +42,7 @@ class MongoPipeline(object):
                 guyouhui = item['guyouhui']
                 for date in guyouhui:
                     self.collection.update_one(
-                        filter={'_id':item['_id']},
+                        filter=fil,
                         update={'$push':{
                                 'guyouhui':{'$each':guyouhui[date]}
                             }
@@ -49,7 +51,7 @@ class MongoPipeline(object):
                     )
             else:
                 self.collection.update_one(
-                    filter={'_id':item['_id']},
+                    filter=fil,
                     update={'$set':item},
                     upsert=True
                 )
