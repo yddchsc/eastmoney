@@ -7,4 +7,4 @@ pip install pymongo
 pip install scrapy
 pip install redis
 pip install numpy
-pip intall scrapy-crawlera
+pip install scrapy-crawlera
