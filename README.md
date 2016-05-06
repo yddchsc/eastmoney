@@ -51,15 +51,17 @@ a crawler by scrapy of eastmoney.com
 
 由于scrapy版本不同，运行所以spider的代码不能使用，目前还在重写。
 
-+ 进入E:\MongoDB\bin，双击mongod.exe
-+ 进入E:\MongoDB\mongochef，双击mongochef打开mongochef(可使用其它），选择Quick Connect,弹出对话框后点击connect即可
-+ 打开cmd命令行
-+ 进入eastmoney，scrapy.cfg的目录
-+ 运行scrapy crawl geguyanbao 爬取个股研报
-+ scrapy crawl geguyaowen 爬取个股要闻
-+ scrapy crawl gongsigonggao 爬取公司公告
-+ scrapy crawl guyouhui 爬取股友会
-+ scrapy crawl hangyeyaowen 爬取行业要闻
-+ scrapy crawl xinwen 爬取新闻
++ 起一终端, 运行 python ending.py -r $redis_server_host -s $spider_name
+	- $redis_server_host指作为redis server的ip, 本地可用localhost
+	- $spider_name指要监视的爬虫, 这里只eastmoney_redis一个
+	- 故本地测试用` python ending.py -r localhost -s eastmoney_redis`命令即可
++ 另起一终端, 运行 python start_crawl -m $mode -s $spider_name --host $host_ip
+	- $mode指运行模式, $mode为h则为host模式, 会立即启动爬虫, $mode为l则为leaf模式, 会等待任务队列有任务才启动爬虫
+	- $spider_name同上
+	- $host_ip指分布式模式中运行redis和mongodb的主机
+	- 故本地测试用`python start_crawl.py -m h -s eastmoney_redis --host localhost`
++ ending.py运行结束后, 手动结束start_crawl.py, 因为后者不会主动结束
++ 先启动ending.py, 后启动start_crawl.py, ending的输出中, `start watching`和`ending`,`end`的时间戳间隔即为为爬虫运行时长
+
 + 程序运行完成用cd calculate命令进入calculate文件夹
 + 运行python main.py即可得到结果（如果爬取这三个三十天的数据，处理需要七分钟左右）

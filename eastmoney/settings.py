@@ -29,7 +29,7 @@ ITEM_PIPELINES = {
 	'eastmoney.pipelines.MongoPipeline':300,
 }
 
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'ERROR'
  
 MONGODB_SERVER = 'localhost'
 MONGODB_PORT = 27017
