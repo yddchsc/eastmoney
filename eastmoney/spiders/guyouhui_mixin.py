@@ -47,7 +47,6 @@ class GuYouHuiMixin(object):
                 for data in Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract():
                     content = content + data
                 item['guyouhui'][time0].append({
-                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
@@ -61,7 +60,6 @@ class GuYouHuiMixin(object):
                 return item
             # 如果没有30天，在字典中添加一个键对
             item['guyouhui'][time0] = [{
-                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract()[0],
