@@ -31,20 +31,14 @@ class MongoPipeline(object):
                 xinwen = item['xinwen']
                 self.collection.update_one(
                     filter=fil,
-                    update={'$push':{
-                            'xinwen':{'$each':xinwen}
-                        }
-                    },
+                    update={'$set':xinwen},
                     upsert=True
                 )
             elif 'guyouhui' in item:
                 guyouhui = item['guyouhui']
                 self.collection.update_one(
                     filter=fil,
-                    update={'$push':{
-                            'guyouhui':{'$each':guyouhui}
-                        }
-                    },
+                    update={'$set':guyouhui},
                     upsert=True
                 )
             else:
