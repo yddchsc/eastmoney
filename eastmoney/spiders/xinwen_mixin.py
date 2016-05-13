@@ -10,7 +10,7 @@ class XinWenMixin(object):
         item = response.meta['item']
         url = 'http://guba.eastmoney.com/list,%s,1,f_1.html' %item['_id'] 
         # 构造新闻按发帖时间排序的链接
-        item['number'] = {}
+        item['numberxin'] = {}
         return Request(url, meta={'item':item}, callback=self.parse_xinwen)
 
     def parse_xinwen(self,response):
@@ -19,7 +19,7 @@ class XinWenMixin(object):
         while Selector(response).xpath('//div[@id="articlelistnew"]/div['+str(i)+']/span[5]').extract():
             url = 'http://guba.eastmoney.com' + Selector(response).xpath('//div[@id="articlelistnew"]/div['+str(i)+']/span[3]/a/@href').extract()[0] # 获取每条新闻对应的链接
             a = len(Selector(response).xpath('//div[@id="articlelistnew"]/div/span[5]').extract()) # 获取当前页面的新闻的总条数
-            item['number'] = [int(Selector(response).xpath(u'//div[@class="pager"]/text()').extract()[0][28:-3]),(int(response.url[42:-5])-1)*80+a-1,int(response.url[42:-5])]
+            item['numberxin'] = [int(Selector(response).xpath(u'//div[@class="pager"]/text()').extract()[0][28:-3]),(int(response.url[42:-5])-1)*80+a-1,int(response.url[42:-5])]
             # 将【新闻总新闻条数，当前页面新闻条数，当前页面为第几页】三个数字传给下一个链接，方便后面判断是否跳转到下一页
             yield Request(url, meta={'item':item}, callback=self.parse_getxinwen)
             i = i + 1
@@ -47,6 +47,7 @@ class XinWenMixin(object):
                     content = content + data.encode("UTF-8",'ignore')
                     i = i + 1
                 item['xinwen'][time0].append({
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
@@ -66,6 +67,7 @@ class XinWenMixin(object):
                 i = i + 1
             # 如果没有30天，在字典中添加一个键对
             item['xinwen'][time0] = [{
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
@@ -94,8 +96,8 @@ class XinWenMixin(object):
         num = 0
         for key in item['xinwen']:
             num = num + len(item['xinwen'][key])
-        if item['number'][1] < item['number'][0] and num == item['number'][1]: # 判断是否已经爬取完当前页面所有新闻的链接，能否跳转到下一页
-            url = "http://guba.eastmoney.com/list,"+item['_id']+",1,f_"+str(item['number'][2]+1)+".html"
+        if item['numberxin'][1] < item['numberxin'][0] and num == item['numberxin'][1]: # 判断是否已经爬取完当前页面所有新闻的链接，能否跳转到下一页
+            url = "http://guba.eastmoney.com/list,"+item['_id']+",1,f_"+str(item['numberxin'][2]+1)+".html"
             return Request(url, meta={'item':item}, callback=self.parse_xinwen)
         else:
             return item

@@ -11,7 +11,8 @@ import scrapy
 class EastmoneyItem(scrapy.Item):
     _id = scrapy.Field()
     name = scrapy.Field()
-    number = scrapy.Field()
+    numberxin = scrapy.Field()
+    numbergu = scrapy.Field()
     geguyaowen = scrapy.Field()
     hangyeyaowen = scrapy.Field()
     gongsigonggao = scrapy.Field()

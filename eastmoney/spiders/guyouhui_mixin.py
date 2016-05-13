@@ -8,7 +8,7 @@ from scrapy.http import Request
 class GuYouHuiMixin(object):
     def _gen_guyouhui_request(self,response):
         item = response.meta['item']
-        item['number'] = {}
+        item['numbergu'] = {}
         url = 'http://guba.eastmoney.com/list,%s,5,f_1.html' % item['_id']
         # 构造股友会按发帖时间排序的链接
         return Request(url, meta={'item':item}, callback=self.parse_guyouhui)
@@ -19,7 +19,7 @@ class GuYouHuiMixin(object):
         while Selector(response).xpath('//div[@id="articlelistnew"]/div[%d]/span[5]'%i).extract():
             url = 'http://guba.eastmoney.com' + Selector(response).xpath('//div[@id="articlelistnew"]/div[%d]/span[3]/a/@href'%i).extract()[0] # 获取每条帖子对应的链接
             a = len(Selector(response).xpath('//div[@id="articlelistnew"]/div/span[5]').extract()) # 获取当前页面的帖子的总条数
-            item['number'] = [
+            item['numbergu'] = [
                 int(Selector(response).xpath(u'//div[@class="pager"]/text()').extract()[0][28:-3]),
                 (int(response.url[42:-5])-1)*80+a-1,
                 int(response.url[42:-5])
@@ -47,6 +47,7 @@ class GuYouHuiMixin(object):
                 for data in Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract():
                     content = content + data
                 item['guyouhui'][time0].append({
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':content,
@@ -60,6 +61,7 @@ class GuYouHuiMixin(object):
                 return item
             # 如果没有30天，在字典中添加一个键对
             item['guyouhui'][time0] = [{
+                    'date':time0,
                     'title':Selector(response).xpath('//*[@id="zwconttbt"]/text()').extract()[0],
                     #'author':Selector(response).xpath('//*[@id="zwconttbn"]/strong/a/text()').extract()[0],
                     'content':Selector(response).xpath('//*[@id="zwconbody"]/div/text()').extract()[0],
@@ -88,8 +90,8 @@ class GuYouHuiMixin(object):
         num = 0
         for key in item['guyouhui']:
             num = num + len(item['guyouhui'][key])
-        if item['number'][1] < item['number'][0] and num == item['number'][1]: # 判断是否已经爬取完当前页面所有帖子的链接，能否跳转到下一页
-            url = "http://guba.eastmoney.com/list,"+item['_id']+",5,f_"+str(item['number'][2]+1)+".html"
+        if item['numbergu'][1] < item['numbergu'][0] and num == item['numbergu'][1]: # 判断是否已经爬取完当前页面所有帖子的链接，能否跳转到下一页
+            url = "http://guba.eastmoney.com/list,"+item['_id']+",5,f_"+str(item['numbergu'][2]+1)+".html"
             return Request(url, meta={'item':item}, callback=self.parse_guyouhui)
         else:
             return item

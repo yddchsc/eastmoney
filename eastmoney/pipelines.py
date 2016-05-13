@@ -29,18 +29,26 @@ class MongoPipeline(object):
             del item['_id']
             if 'xinwen' in item:
                 xinwen = item['xinwen']
-                self.collection.update_one(
-                    filter=fil,
-                    update={'$set':xinwen},
-                    upsert=True
-                )
+                for date in xinwen:
+                    self.collection.update_one(
+                        filter=fil,
+                        update={'$push':{
+                                'xinwen':{'$each':xinwen[date]}
+                            }
+                        },
+                        upsert=True
+                    )
             elif 'guyouhui' in item:
                 guyouhui = item['guyouhui']
-                self.collection.update_one(
-                    filter=fil,
-                    update={'$set':guyouhui},
-                    upsert=True
-                )
+                for date in guyouhui:
+                    self.collection.update_one(
+                        filter=fil,
+                        update={'$push':{
+                                'guyouhui':{'$each':guyouhui[date]}
+                            }
+                        },
+                        upsert=True
+                    )
             else:
                 self.collection.update_one(
                     filter=fil,
