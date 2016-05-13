@@ -33,7 +33,7 @@ class MongoPipeline(object):
                     self.collection.update_one(
                         filter=fil,
                         update={'$push':{
-                                'xinwen':{'$each':xinwen[date]}
+                                'xinwen':{'$each':xinwen}
                             }
                         },
                         upsert=True
@@ -44,7 +44,7 @@ class MongoPipeline(object):
                     self.collection.update_one(
                         filter=fil,
                         update={'$push':{
-                                'guyouhui':{'$each':guyouhui[date]}
+                                'guyouhui':{'$each':guyouhui}
                             }
                         },
                         upsert=True
