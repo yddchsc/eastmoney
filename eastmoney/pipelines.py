@@ -27,34 +27,32 @@ class MongoPipeline(object):
             #self.connection.save(dict(item))
             fil = {'_id':item['_id']}
             del item['_id']
-            # if 'xinwen' in item:
-            #     xinwen = item['xinwen']
-            #     for date in xinwen:
-            #         self.collection.update_one(
-            #             filter=fil,
-            #             update={'$push':{
-            #                     'xinwen':{'$each':xinwen}
-            #                 }
-            #             },
-            #             upsert=True
-            #         )
-            # elif 'guyouhui' in item:
-            #     guyouhui = item['guyouhui']
-            #     for date in guyouhui:
-            #         self.collection.update_one(
-            #             filter=fil,
-            #             update={'$push':{
-            #                     'guyouhui':{'$each':guyouhui}
-            #                 }
-            #             },
-            #             upsert=True
-            #         )
-            # else:
-            self.collection.update_one(
-                filter=fil,
-                update={'$set':item},
-                upsert=True
-            )
+            if 'xinwen' in item:
+                xinwen = item['xinwen']
+                self.collection.update_one(
+                    filter=fil,
+                    update={'$push':{
+                            'xinwen':{'$each':xinwen}
+                        }
+                    },
+                    upsert=True
+                )
+            elif 'guyouhui' in item:
+                guyouhui = item['guyouhui']
+                self.collection.update_one(
+                    filter=fil,
+                    update={'$push':{
+                            'guyouhui':{'$each':guyouhui}
+                        }
+                    },
+                    upsert=True
+                )
+            else:
+                self.collection.update_one(
+                    filter=fil,
+                    update={'$set':item},
+                    upsert=True
+                )
         else:
             raise DropItem("Missing {0}!".format(data))
         return item

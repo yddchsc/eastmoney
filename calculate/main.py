@@ -117,6 +117,8 @@ def run_score():
 	stock = db.stock.find()
 	contents = {}
 	xinresults = []
+	comments = {}
+	guresults = []
 	j = 0
 	for news in stock:
 		xinresults.append({'id':news['_id'],'name':news['name'],'score':{}})
@@ -130,11 +132,6 @@ def run_score():
 				i = i + 1
 			score = single_review_sentiment_score(contents[key])  # 对每条新闻调用函数求得打分
 			xinresults[j]['score'][key] = score # 将分数存入字典
-		j = j + 1
-	comments = {}
-	guresults = []
-	j = 0
-	for news in stock:
 		guresults.append({'id':news['_id'],'name':news['name'],'score':{}})
 		for key in news['guyouhui']:  # 将guyouhui中的每天的帖子正文和评论都分别连接起来，然后对每天的连接后的字符串分别进行评分。
 			comments[key] = ""
@@ -166,14 +163,17 @@ def write_results(results,filename):
 def prepare(xinresults,guresults):
 	conn = pymongo.MongoClient("127.0.0.1",27017)
 	db = conn.eastmoney #连接库
-	stock = db.stock.find()
+	geguyanbao = db.stock.find()
+	geguyaowen = db.stock.find()
+	gongsigonggao = db.stock.find()
+	hangyeyaowen = db.stock.find()
 	
-	geguyanbao = get_data(stock,'geguyanbao','_id',guresults) # 获取每天个股研报的数量
-	geguyaowen = get_data(stock,'geguyaowen','_id',guresults) # 获取每天个股要闻的数量 
-	gongsigonggao = get_data(stock,'gongsigonggao','_id',guresults) # 获取每天公司公告的数量
-	hangyeyaowen = get_data(stock,'hangyeyaowen','_id',guresults)
+	geguyanbao = get_data(geguyanbao,'geguyanbao','_id',guresults) # 获取每天个股研报的数量
+	geguyaowen = get_data(geguyaowen,'geguyaowen','_id',guresults) # 获取每天个股要闻的数量 
+	gongsigonggao = get_data(gongsigonggao,'gongsigonggao','_id',guresults) # 获取每天公司公告的数量
+	hangyeyaowen = get_data(hangyeyaowen,'hangyeyaowen','_id',guresults)
 	# 获取每天行业要闻的数量
-	xinresults = get_data(stock,'score','id',guresults) # 获取每天新闻的分数
+	xinresults = get_data(xinresults,'score','id',guresults) # 获取每天新闻的分数
 	return geguyanbao,geguyaowen,gongsigonggao,hangyeyaowen,xinresults
 def get_data(arrays,sstr1,sstr2,guresults):
 	number = len(guresults)
