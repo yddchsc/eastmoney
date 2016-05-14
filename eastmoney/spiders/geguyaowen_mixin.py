@@ -25,6 +25,7 @@ class GeGuYaoWenMixin(object):
             'p':0,
         }
         url = ''.join([domain,base_url,'?',urlencode(url_args)])
+        print url
         return Request(url, meta={'item':item}, callback=self.parse_geguyaowen)
 
     def parse_stock(self,response):
@@ -41,7 +42,8 @@ class GeGuYaoWenMixin(object):
         r = r[15:-1] #截取json数据部分的字符串
         try:
             jobj = json.loads(json.dumps(eval(r)))
-        except:
+        except Exception,e:
+            print e
             return
         sStr1 = "null"
         geguyaowen = 0
@@ -96,4 +98,5 @@ class GeGuYaoWenMixin(object):
             url = "http://so.eastmoney.com/Search.ashx?qw=(%s)(%s)&qt=2&sf=0&st=1&cpn=%d&pn=100&f=0&p=0"%(item['_id'],item['name'],loo+1 )
             return Request(url, meta={'item':item}, callback=self.parse_geguyaowen)
         else:
+            print item
             return item

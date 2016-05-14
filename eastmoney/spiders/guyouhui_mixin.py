@@ -6,10 +6,20 @@ from scrapy.selector import Selector
 from scrapy.http import Request
 
 class GuYouHuiMixin(object):
+    def __init__(self):
+        self.num = {}
+        self.time = {}
+        self.flag = {}
+
     def _gen_guyouhui_request(self,response):
         item = response.meta['item']
         item['numbergu'] = {}
         url = 'http://guba.eastmoney.com/list,%s,5,f_1.html' % item['_id']
+
+        self.num[item['_id']] = 0
+        self.time[item['_id']] = []
+        self.flag[item['_id']] = False
+
         # 构造股友会按发帖时间排序的链接
         return Request(url, meta={'item':item}, callback=self.parse_guyouhui)
 
@@ -18,6 +28,7 @@ class GuYouHuiMixin(object):
         i = 2
         while Selector(response).xpath('//div[@id="articlelistnew"]/div[%d]/span[5]'%i).extract():
             url = 'http://guba.eastmoney.com' + Selector(response).xpath('//div[@id="articlelistnew"]/div[%d]/span[3]/a/@href'%i).extract()[0] # 获取每条帖子对应的链接
+            #print url
             a = len(Selector(response).xpath('//div[@id="articlelistnew"]/div/span[5]').extract()) # 获取当前页面的帖子的总条数
             item['numbergu'] = [
                 int(Selector(response).xpath(u'//div[@class="pager"]/text()').extract()[0][28:-3]),
@@ -29,6 +40,11 @@ class GuYouHuiMixin(object):
 
     def parse_getguyouhui(self,response):
         item = response.meta['item']
+
+        if self.flag[item['_id']] == False:
+            item['guyouhui'] = {}
+        self.num[item['_id']] += 1
+
         dates = {}
         day = []
         time0 = Selector(response).xpath('//*[@id="zwconttb"]/div[2]/text()').extract()[0][4:14] # 爬取帖子的发帖时间
@@ -87,11 +103,24 @@ class GuYouHuiMixin(object):
                     j = j + 1
                 break
         item['guyouhui'][time0] = day
+        '''
         num = 0
         for key in item['guyouhui']:
             num = num + len(item['guyouhui'][key])
+        '''
+
+        num = self.num[item['_id']]
+        if time0 not in self.time[item['_id']]:
+            self.time[item['_id']].append(time0)
+        if len(self.time[item['_id']]) > 30:
+            return item
+        print '%s\t%d\t%d' % (item['_id'],num,len(self.time[item['_id']]))
+        #print item['numbergu'][1]
+
         if item['numbergu'][1] < item['numbergu'][0] and num == item['numbergu'][1]: # 判断是否已经爬取完当前页面所有帖子的链接，能否跳转到下一页
             url = "http://guba.eastmoney.com/list,"+item['_id']+",5,f_"+str(item['numbergu'][2]+1)+".html"
+            self.flag[item['_id']] = True
             return Request(url, meta={'item':item}, callback=self.parse_guyouhui)
         else:
+            self.flag[item['_id']] = False
             return item

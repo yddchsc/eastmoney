@@ -50,16 +50,31 @@ a crawler by scrapy of eastmoney.com
 #运行方法
 
 由于scrapy版本不同，运行所以spider的代码不能使用，目前还在重写。
+apt-get update
+apt-get install -y git
+git clone https://github.com/yddchsc/eastmoney.git
+cd eastmoney
+sh build.sh
 
 + 起一终端, 运行 python ending.py -r $redis_server_host -s $spider_name
 	- $redis_server_host指作为redis server的ip, 本地可用localhost
 	- $spider_name指要监视的爬虫, 这里只eastmoney_redis一个
 	- 故本地测试用` python ending.py -r localhost -s eastmoney_redis`命令即可
+	python ending.py -r 120.25.96.184 -s eastmoney_redis
+
+
+
 + 另起一终端, 运行 python start_crawl.py -m $mode -s $spider_name --host $host_ip
 	- $mode指运行模式, $mode为h则为host模式, 会立即启动爬虫, $mode为l则为leaf模式, 会等待任务队列有任务才启动爬虫
 	- $spider_name同上
 	- $host_ip指分布式模式中运行redis和mongodb的主机
 	- 故本地测试用`python start_crawl.py -m h -s eastmoney_redis --host localhost`
+
+	python start_crawl.py -m h -s eastmoney_redis --host 120.25.96.184
+
+	python start_crawl.py -m l -s eastmoney_redis --host 120.25.96.184
+
+
 + ending.py运行结束后, 手动结束start_crawl.py, 因为后者不会主动结束
 + 先启动ending.py, 后启动start_crawl.py, ending的输出中, `start watching`和`ending`,`end`的时间戳间隔即为为爬虫运行时长
 
