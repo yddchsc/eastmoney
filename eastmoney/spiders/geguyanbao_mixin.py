@@ -34,6 +34,7 @@ class GeGuYanBaoMixin(object):
         sStr1 = "null"
         geguyanbao = 0
         day = {}
+        next = False
         if r[0:23] != "{\"data\":[{stats:false}]":           
             sStr1 = json.loads(r)['data'][0]['datetime'][0:10] #判断json数据是否为空
             for key in item: # 判断键值geguyanbao是否存在
@@ -50,8 +51,10 @@ class GeGuYanBaoMixin(object):
             loo = loo / 25 + 1 #计算当前页面为第几页
             if loo < int(json.loads(r)['pages']):   #判断当前页面是否为最后一页
                 num = 25
+                next = True
             else: #如果为最后一页，计算页面研报的数量
                 num = int(json.loads(r)['count']) - (loo-1) * 25
+                next = False
             lo = 0
             while lo < num:
                 data = json.loads(r)['data'][lo]['datetime'][0:10]
@@ -72,7 +75,7 @@ class GeGuYanBaoMixin(object):
             day[str(sStr1)] = geguyanbao
         day[str(sStr1)] = geguyanbao
         item['geguyanbao'] = day # 将结果赋值给item
-        if loo < int(json.loads(r)['pages']): # 判断是否还有下一页，若有，则跳转
+        if next: # 判断是否还有下一页，若有，则跳转
             url = "http://datainterface.eastmoney.com//EM_DataCenter/js.aspx?type=SR&sty=GGSR&js={\"data\":[(x)],\"pages\":\"(pc)\",\"update\":\"(ud)\",\"count\":\"(count)\"}&ps=25&p="+str(loo+1)+"&code="+item['_id']
             return Request(url, meta={'item':item}, callback=self.parse_geguyanbao)
         else: #如果没有下一页，返回item

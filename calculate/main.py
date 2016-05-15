@@ -115,38 +115,40 @@ def run_score():
 	conn = pymongo.MongoClient("127.0.0.1",27017)
 	db = conn.eastmoney #连接库
 	stock = db.stock.find()
-	contents = {}
 	xinresults = []
-	comments = {}
 	guresults = []
 	j = 0
 	for news in stock:
+		contents = {}
+		comments = {}
 		xinresults.append({'id':news['_id'],'name':news['name'],'score':{}})
-		for key in news['xinwen']: # 将xinwen中的每天的新闻都分别连接起来，然后对每天的连接后的新闻分别进行评分。
-			contents[key] = ""
-			i = 0
-			while i < len(news['xinwen'][key]):
-				content = news['xinwen'][key][i]['content'].strip()
+		guresults.append({'id':news['_id'],'name':news['name'],'score':{}})
+		if news.has_key('xinwen'):
+			for data in news['xinwen']: # 将xinwen中的每天的新闻都分别连接起来，然后对每天的连接后的新闻分别进行评分。
+				if contents.has_key(data['date']) == False:
+					key = data['date']
+					contents[key] = ""
+				key = data['date']
+				content = data['content'].strip()
 				content = content.encode("UTF-8",'ignore')
 				contents[key] = contents[key] + "。" + content
-				i = i + 1
-			score = single_review_sentiment_score(contents[key])  # 对每条新闻调用函数求得打分
-			xinresults[j]['score'][key] = score # 将分数存入字典
-		guresults.append({'id':news['_id'],'name':news['name'],'score':{}})
-		for key in news['guyouhui']:  # 将guyouhui中的每天的帖子正文和评论都分别连接起来，然后对每天的连接后的字符串分别进行评分。
-			comments[key] = ""
-			i = 0
-			while i < len(news['guyouhui'][key]):
-				content = news['guyouhui'][key][i]['content'].strip() #获取帖子正文
+				score = single_review_sentiment_score(contents[key])  # 对每条新闻调用函数求得打分
+				xinresults[j]['score'][key] = score # 将分数存入字典		
+		if news.has_key('guyouhui'):			
+			for data in news['guyouhui']:  # 将guyouhui中的每天的帖子正文和评论都分别连接起来，然后对每天的连接后的字符串分别进行评分。
+				if comments.has_key(data['date']) == False:
+					key = data['date']
+					comments[key] = ""
+				key = data['date']
+				content = data['content'].strip() #获取帖子正文
 				content = content.encode("UTF-8",'ignore')
 				comments[key] = comments[key] + "。" + content
-				for data in news['guyouhui'][key][i]['comments']: # 获取该帖子对应的所有评论
-					content = news['guyouhui'][key][i]['comments'][data]['comment'].strip()
+				for a in data['comments']: # 获取该帖子对应的所有评论
+					content = data['comments'][a]['comment'].strip()
 					content = content.encode("UTF-8",'ignore')
 					comments[key] = comments[key] + "。" + content
-				i = i + 1
-			score = single_review_sentiment_score(comments[key])  #调用函数求得打分
-			guresults[j]['score'][key] = score # 将分数存入字典
+				score = single_review_sentiment_score(comments[key])  #调用函数求得打分
+				guresults[j]['score'][key] = score # 将分数存入字典
 		j = j + 1
 	return xinresults,guresults # 返回每天新闻得分和股友会得分的字典
 
@@ -183,10 +185,14 @@ def get_data(arrays,sstr1,sstr2,guresults):
 			if data['id'] == arrays[i][sstr2]:
 				a[data['id']] = {}
 				for key in data['score']:
-					if arrays[i][sstr1].has_key(key): # 判断这个日期是否存在，不存在就说明数量为0
-						a[data['id']][key] = arrays[i][sstr1][key]
-					else:
+					if arrays[i].has_key(sstr1) == False:
 						a[data['id']][key] = 0
+					else:
+						if arrays[i][sstr1].has_key(key): # 判断这个日期是否存在，不存在就说明数量为0
+							a[data['id']][key] = arrays[i][sstr1][key]
+						else:
+							a[data['id']][key] = 0
+						
 				break
 	return a # 返回挑选出的30天的数据
 
