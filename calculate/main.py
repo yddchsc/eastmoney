@@ -132,6 +132,7 @@ def run_score():
 				content = data['content'].strip()
 				content = content.encode("UTF-8",'ignore')
 				contents[key] = contents[key] + "。" + content
+			for key in contents:
 				score = single_review_sentiment_score(contents[key])  # 对每条新闻调用函数求得打分
 				xinresults[j]['score'][key] = score # 将分数存入字典		
 		if news.has_key('guyouhui'):			
@@ -147,8 +148,10 @@ def run_score():
 					content = data['comments'][a]['comment'].strip()
 					content = content.encode("UTF-8",'ignore')
 					comments[key] = comments[key] + "。" + content
+			for key in comments:
 				score = single_review_sentiment_score(comments[key])  #调用函数求得打分
 				guresults[j]['score'][key] = score # 将分数存入字典
+
 		j = j + 1
 	return xinresults,guresults # 返回每天新闻得分和股友会得分的字典
 
